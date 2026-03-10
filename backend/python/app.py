@@ -5,9 +5,8 @@ app = FastAPI()
 
 analyzer = SentimentIntensityAnalyzer()
 
-
 @app.post("/analyze")
-def analyze_sentiment(data: dict):
+def analyze(data: dict):
 
     articles = data["articles"]
 
@@ -17,16 +16,13 @@ def analyze_sentiment(data: dict):
 
         text = (article["title"] or "") + " " + (article["description"] or "")
 
-        sentiment = analyzer.polarity_scores(text)
+        result = analyzer.polarity_scores(text)
 
-        scores.append({
-            "text": text,
-            "score": sentiment["compound"]
-        })
+        scores.append(result["compound"])
 
-    avg = sum([s["score"] for s in scores]) / len(scores)
+    avg = sum(scores) / len(scores)
 
     return {
         "average_sentiment": avg,
-        "articles": scores
+        "article_scores": scores
     }

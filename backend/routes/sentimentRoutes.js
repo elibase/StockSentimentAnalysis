@@ -1,13 +1,13 @@
 const express = require("express");
+
 const router = express.Router();
 
-router.get("/:ticker", (req, res) => {
-  const ticker = req.params.ticker;
+const { getStockSentiment } = require("../controllers/sentimentController");
 
-  res.json({
-    ticker: ticker,
-    message: "Route works"
-  });
+router.get("/:ticker", getStockSentiment);
+
+router.get("/", (req, res) => {
+  res.send("Please provide a stock ticker, e.g., /api/sentiment/TSLA");
 });
 
 module.exports = router;

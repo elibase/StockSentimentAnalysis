@@ -7,19 +7,26 @@ async function getStockSentiment(req, res) {
 
   try {
 
+    console.log("Fetching news for:", ticker);
+
     const articles = await getStockNews(ticker);
 
-    const results = await analyzeSentiment(articles);
+    const sentiment = await analyzeSentiment(articles);
 
     res.json({
       ticker,
-      sentiment: results
+      sentiment
     });
 
-  } catch (err) {
-    res.status(500).json({ error: "Failed to analyze sentiment" });
-  }
+  } catch (error) {
 
+    console.error(error);
+
+    res.status(500).json({
+      error: "Sentiment analysis failed"
+    });
+
+  }
 }
 
 module.exports = { getStockSentiment };
