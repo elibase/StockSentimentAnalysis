@@ -1,31 +1,17 @@
-const { getStockNews } = require("../services/newsService");
+const { getCompanyNews, getHistoricalPrices } = require("../services/stockService");
 const { analyzeSentiment } = require("../services/pythonService");
 
 async function getStockSentiment(req, res) {
-
-  const ticker = req.params.ticker;
-
   try {
+    const ticker = req.params.ticker.toUpperCase();
+    const news = await getCompanyNews(ticker);
+    const sentiment = await analyzeSentiment(news);
+    const prices = await getHistoricalPrices(ticker, 30);
 
-    console.log("Fetching news for:", ticker);
-
-    const articles = await getStockNews(ticker);
-
-    const sentiment = await analyzeSentiment(articles);
-
-    res.json({
-      ticker,
-      sentiment
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      error: "Sentiment analysis failed"
-    });
-
+    res.json({ ticker, sentiment, prices });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Stock data fetch failed" });
   }
 }
 
