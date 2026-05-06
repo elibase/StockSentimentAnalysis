@@ -7,32 +7,6 @@ if (!API_KEY) {
   throw new Error("FINNHUB_API_KEY is missing in .env");
 }
 
-// Fetch company news
-async function getCompanyNews(ticker) {
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-  const from = weekAgo.toISOString().slice(0, 10);
-  const to = now.toISOString().slice(0, 10);
-
-  try {
-    const url = `${BASE_URL}/company-news`;
-    const response = await axios.get(url, {
-      params: { symbol: ticker, from, to, token: API_KEY },
-    });
-
-    return response.data.map((article) => ({
-      title: article.headline,
-      description: article.summary,
-      url: article.url,
-      date: article.datetime ? new Date(article.datetime * 1000) : null,
-    }));
-  } catch (err) {
-    console.error("Error fetching news:", err.message);
-    throw new Error("Failed to fetch company news");
-  }
-}
-
 // Fetch historical prices (rewritten version)
 async function getHistoricalPrices(ticker, days = 30) {
   const now = Math.floor(Date.now() / 1000);
@@ -62,4 +36,4 @@ async function getHistoricalPrices(ticker, days = 30) {
   }
 }
 
-module.exports = { getCompanyNews, getHistoricalPrices };
+module.exports = { getHistoricalPrices };
