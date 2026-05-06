@@ -8,12 +8,13 @@ async function getStockTimeSeries(ticker) {
     const url = `${BASE_URL}function=TIME_SERIES_DAILY&datatype=json&symbol=${ticker}&apikey=${API_KEY}`
     const response = await axios.get(url);
 
-    const timeSeries = data["Time Series (Daily)"];
+  const data = response.data;
+
     if (!data || !data["Time Series (Daily)"]) {
       throw new Error("Invalid response from Alpha Vantage");
     }
 
-    return response.data["Time Series (Daily)"];
+    return data["Time Series (Daily)"];
   } catch (error) {
     console.error("Error fetching prices:", error.message);
     throw new Error("Failed to fetch time series data");
