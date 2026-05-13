@@ -4,13 +4,12 @@ const axios = require("axios");
 const API_KEY = process.env.NEWS_API_KEY
 
 async function getStockNews(ticker) {
-
   try {
     if (!ticker) {
       throw new Error("Ticker is required");
     }
     // news API url
-    const url = `https://newsapi.org/v2/everything?q=${ticker}&language=en&apiKey=${API_KEY};`
+    const url = `https://newsapi.org/v2/everything?q=${ticker}&language=en&apiKey=${API_KEY}`
     const response = await axios.get(url);
 
     if (!response.data || !response.data.articles) {
