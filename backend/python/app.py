@@ -42,7 +42,7 @@ def analyze(data: dict):
             label = "negative"
         else:
             label = "neutral"
-
+            
         analyzed_articles.append({
             "title": article.get("title"),
             "description": article.get("description"),
@@ -54,8 +54,15 @@ def analyze(data: dict):
         })
 
     average_sentiment = sum(scores) / len(scores)
-
+    # overall sentiment
+    if average_sentiment >= 0.05:
+        overall_label = "Bullish"
+    elif average_sentiment <= -0.05:
+        overall_label = "Bearish"
+    else:
+        overall_label = "Neutral"
     return {
+        "overall_sentiment": overall_label,
         "average_sentiment": average_sentiment,
         "article_count": len(analyzed_articles),
         "articles": analyzed_articles
