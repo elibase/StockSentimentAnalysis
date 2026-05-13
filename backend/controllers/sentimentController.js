@@ -1,12 +1,13 @@
-const { getCompanyNews, getHistoricalPrices } = require("../services/stockService");
+const { getStockTimeSeries } = require("../services/stockService");
 const { analyzeSentiment } = require("../services/pythonService");
+const { getStockNews } = require("../services/newsService");
 
 async function getStockSentiment(req, res) {
   try {
     const ticker = req.params.ticker.toUpperCase();
-    const news = await getCompanyNews(ticker);
+    const news = await getStockNews(ticker);
     const sentiment = await analyzeSentiment(news);
-    const prices = await getHistoricalPrices(ticker, 30);
+    const prices = await getStockTimeSeries(ticker);
 
     res.json({ ticker, sentiment, prices });
   } catch (err) {

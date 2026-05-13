@@ -8,21 +8,62 @@ analyzer = SentimentIntensityAnalyzer()
 @app.post("/analyze")
 def analyze(data: dict):
 
-    articles = data["articles"]
+    articles = data.get("articles", [])
 
+    if not articles:
+        return {
+            "average_sentiment": 0,
+            "articles": []
+        }
+
+    analyzed_articles = []
     scores = []
 
     for article in articles:
 
-        text = (article["title"] or "") + " " + (article["description"] or "")
+        text = (
+            (article.get("title") or "") +
+            " " +
+            (article.get("description") or "") +
+            " " +
+            (article.get("content") or "")
+        )
 
-        result = analyzer.polarity_scores(text)
+        sentiment = analyzer.polarity_scores(text)
 
-        scores.append(result["compound"])
+        compound_score = sentiment["compound"]
 
-    avg = sum(scores) / len(scores)
+        scores.append(compound_score)
 
+        # Determine label
+        if compound_score >= 0.05:
+            label = "positive"
+        elif compound_score <= -0.05:
+            label = "negative"
+        else:
+            label = "neutral"
+            
+        analyzed_articles.append({
+            "title": article.get("title"),
+            "description": article.get("description"),
+            "source": article.get("source"),
+            "url": article.get("url"),
+            "publishedAt": article.get("publishedAt"),
+            "sentiment_score": compound_score,
+            "sentiment_label": label
+        })
+
+    average_sentiment = sum(scores) / len(scores)
+    # overall sentiment
+    if average_sentiment >= 0.05:
+        overall_label = "Bullish"
+    elif average_sentiment <= -0.05:
+        overall_label = "Bearish"
+    else:
+        overall_label = "Neutral"
     return {
-        "average_sentiment": avg,
-        "article_scores": scores
+        "overall_sentiment": overall_label,
+        "average_sentiment": average_sentiment,
+        "article_count": len(analyzed_articles),
+        "articles": analyzed_articles
     }
