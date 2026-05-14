@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { getStockSentiment } from "./services/api";
+import axios from "axios";
+import StockChart from "./components/StockChart";
+import ArticleList from "./components/ArticleList";
 
-export default function Home() {
 
-  type SentimentResponse = {
+
+type SentimentResponse = {
   ticker: string;
   sentiment: {
     average_sentiment: number;
@@ -23,62 +25,103 @@ export default function Home() {
   }[];
 };
 
+export default function Home() {
   const [ticker, setTicker] = useState("");
   const [data, setData] = useState<SentimentResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
 
-      const result = await getStockSentiment(ticker);
+      const res = await axios.get(
+        `http://localhost:5000/api/sentiment/${ticker}`
+      );
 
-      setData(result);
-
+      setData(res.data);
     } catch (err) {
-      console.error("API error:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>Stock Sentiment Dashboard</h1>
+    <div className="min-h-screen bg-gray-950 text-white p-6">
 
-      <input
-        value={ticker}
-        onChange={(e) => setTicker(e.target.value)}
-        placeholder="TSLA"
-      />
+      {/* Header */}
+      <h1 className="text-3xl font-bold mb-6">
+        Stock Sentiment Dashboard
+      </h1>
 
-      <button onClick={handleSearch}>
-        Search
-      </button>
+      {/* Search */}
+      <div className="flex gap-2 mb-6">
+        <input
+          className="p-2 rounded bg-gray-800 border border-gray-700"
+          placeholder="Enter ticker (TSLA)"
+          value={ticker}
+          onChange={(e) => setTicker(e.target.value)}
+        />
+        <button
+          onClick={fetchData}
+          className="bg-blue-600 px-4 py-2 rounded"
+        >
+          Search
+        </button>
+      </div>
 
       {loading && <p>Loading...</p>}
 
+      {/* Dashboard */}
       {data && (
-        <div>
-          <h2>{data.ticker}</h2>
+        <div className="grid gap-6">
 
-          <p>
-            Sentiment: {data.sentiment.overall_sentiment}
-          </p>
+          {/* TOP CARDS */}
+          <div className="grid md:grid-cols-2 gap-4">
 
-          <p>
-            Score: {data.sentiment.average_sentiment}
-          </p>
+            {/* Sentiment Card */}
+            <div className="bg-gray-900 p-4 rounded-xl">
+              <h2 className="text-xl font-semibold">
+                {data.ticker}
+              </h2>
 
-          <p>
-            Articles: {data.sentiment.article_count}
-          </p>
+              <p className="text-green-400 text-lg">
+                {data.sentiment.overall_sentiment}
+              </p>
 
-          <p>
-            Latest Close: {data.prices?.at(-1)?.close}
-          </p>
+              <p>
+                Score:{" "}
+                {data.sentiment.average_sentiment.toFixed(3)}
+              </p>
+
+              <p>
+                Articles: {data.sentiment.article_count}
+              </p>
+            </div>
+
+            {/* Price Card */}
+            <div className="bg-gray-900 p-4 rounded-xl">
+              <p className="text-gray-400">
+                Latest Close
+              </p>
+
+              <p className="text-2xl font-bold">
+                ${data.prices?.at(-1)?.close.toFixed(2)}
+              </p>
+            </div>
+
+          </div>
+
+          {/* STOCK CHART */}
+          <StockChart prices={data.prices} />
+
+          {/* ARTICLE LIST */}
+          <ArticleList
+            articles={data.sentiment.articles}
+          />
+
         </div>
       )}
-    </main>
+    </div>
   );
 }
